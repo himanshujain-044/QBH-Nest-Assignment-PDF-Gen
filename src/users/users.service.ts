@@ -69,56 +69,29 @@ export class UsersService {
     }
   }
 
-  // async pdfGenerator(): Promise<Buffer> {
-  //   const usersData = await this.user.find()
-
-  //   const pdfBuffer: Buffer = await new Promise((resolve) => {
-  //     const doc = new PDFDocument({ margin: 30, size: 'A4' })
-  //     doc.text(JSON.stringify(usersData))
-  //     doc.text(JSON.stringify(usersData))
-
-  //     doc.moveDown()
-  //     doc.text('I am last')
-  //     const buffer = []
-  //     doc.on('data', buffer.push.bind(buffer))
-  //     doc.on('end', () => {
-  //       const data = Buffer.concat(buffer)
-  //       resolve(data)
-  //     })
-  //     doc.end()
-  //   })
-  //   return pdfBuffer
-  // }
-
   async pdfGenerator(res: Response | string): Promise<any> {
     try {
       const usersData = await this.user.find()
       const convertedData = convertValuesInArray(usersData)
       const doc = new PDFDocument({ margin: 30, size: 'A4' })
-      // save document
+
       const writeStream = fs.createWriteStream('./document.pdf')
       const writePromise = new Promise((resolve, reject) => {
         writeStream.on('finish', () => resolve(true))
         writeStream.on('error', () => reject(false))
       })
-      // doc.pipe(fs.createWriteStream('./document.pdf'))
+
       doc.pipe(writeStream)
-      // ;(async function () {
-      // table
+
       const table = {
         title: 'User Data',
         subtitle: 'latest user data generated',
         headers: ['ID', 'Name', 'Email', 'Phone Number', 'Address'],
         rows: convertedData,
       }
-      // A4 595.28 x 841.89 (portrait) (about width sizes)
-      // width
-      // or columnsSize
-      await doc.table(table, {
-        // columnsSize: [200, 100, 100],
-      })
-      // done!
-      // doc.end()
+
+      await doc.table(table, {})
+
       if (res) {
         doc.pipe(res)
       }
